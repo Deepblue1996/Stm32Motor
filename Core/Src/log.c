@@ -11,8 +11,8 @@
 
 char *sprint(char *str, ...) {
     // "/r/n"
-    char *pStr = malloc(sizeof(str) * 10);
-    memset(pStr, 0, sizeof(str) * 10);
+    char *pStr = malloc(strlen(str) * 10);
+    memset(pStr, 0, strlen(str) * 10);
     va_list args;
     int n;
 
@@ -28,24 +28,27 @@ char *sprint(char *str, ...) {
  * @param str
  * @param ...
  */
-void Log(char *str, ...) {
+void Uart1(char *str, ...) {
     // "/r/n"
-    char pStr[sizeof(str) * 10];
-    memset(pStr, 0, sizeof(str) * 10);
+    char pStr[sizeof(str) * 100];
+    memset(pStr, 0, sizeof(str) * 100);
     va_list args;
-    int n;
 
     va_start(args, str);
-    n = vsprintf(pStr, str, args);
+    vsprintf(pStr, str, args);
     va_end(args);
 
-    send(&huart2, pStr);
+    char pStr2[strlen(pStr)];
+    memset(pStr2, 0, sizeof(pStr2));
+    strncpy(pStr2, pStr, strlen(pStr));
+
+    send(&huart1, pStr);
 }
 
 void sendToWifi(char *str, ...) {
 
-    char *pStr = malloc(sizeof(str) * 10);
-    memset(pStr, 0, sizeof(str) * 10);
+    char *pStr = malloc(strlen(str) * 100);
+    memset(pStr, 0, strlen(str) * 100);
     va_list args;
 
     va_start(args, str);
@@ -55,7 +58,7 @@ void sendToWifi(char *str, ...) {
     const char num = strlen(pStr);
 
     char *per = sprint("AT+CIPSEND=%d\r\n", num);
-    char *string5 = sendResponse1(per, "\r\n>");
+    char *string5 = sendResponse2(per, "\r\n>");
     if (strstr(string5, "ERROR") == NULL) {
         Print(pStr);
         Log("Send to Service : %s\r\n", pStr);
@@ -66,16 +69,21 @@ void sendToWifi(char *str, ...) {
     free(per);
 }
 
-void Print(char *str, ...) {
+void Uart2(char *str, ...) {
     // "/r/n"
-    char pStr[sizeof(str) * 10];
+    char pStr[sizeof(str) * 100];
+    memset(pStr, 0, sizeof(str) * 100);
     va_list args;
 
     va_start(args, str);
     vsprintf(pStr, str, args);
     va_end(args);
 
-    send(&huart1, pStr);
+    char pStr2[strlen(pStr)];
+    memset(pStr2, 0, sizeof(pStr2));
+    strncpy(pStr2, pStr, strlen(pStr));
+
+    send(&huart2, pStr);
 }
 
 /**
@@ -122,11 +130,11 @@ char *sendResponse1(char *msg, char *isOk) {
 
     static char rxBuffer[100];
 
-    memset(rxBuffer, 0, sizeof(rxBuffer));
+    memset(rxBuffer, 0, strlen(rxBuffer));
 
     HAL_UART_Transmit(&huart1, (uint8_t *) msg, strlen(msg), 100);
     /*Receive command and save in "rxBuffer" array with 5s timeout*/
-    HAL_UART_Receive(&huart1, (uint8_t *) rxBuffer, 255, 100);
+    HAL_UART_Receive(&huart1, (uint8_t *) rxBuffer, sizeof(rxBuffer), 100);
     /*Process recived command*/
 
     if (strstr(rxBuffer, isOk) != NULL || strstr(rxBuffer, "ALREADY CONNECTED") != NULL
@@ -152,9 +160,11 @@ char *sendResponse2(char *msg, char *isOk) {
     memset(rxBuffer, 0, sizeof(rxBuffer));
 
     while (index > 0) {
-        HAL_UART_Transmit(&huart2, (uint8_t *) msg, strlen(msg), 30);
+        size_t msgLen = strlen(msg);
+        size_t rxBufferLen = sizeof(rxBuffer);
+        HAL_UART_Transmit(&huart2, (uint8_t *) msg, msgLen, 30);
         /*Receive command and save in "rxBuffer" array with 5s timeout*/
-        HAL_UART_Receive(&huart2, (uint8_t *) rxBuffer, 255, 30);
+        HAL_UART_Receive(&huart2, (uint8_t *) rxBuffer, rxBufferLen, 30);
         /*Process recived command*/
 
         if (strstr(rxBuffer, isOk) != NULL || strstr(rxBuffer, "ALREADY CONNECTED") != NULL) {

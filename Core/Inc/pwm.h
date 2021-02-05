@@ -10,9 +10,10 @@ typedef unsigned short int u16;
 typedef unsigned long int u32;
 
 #define CKTIM       ((u32)100000000uL)  //主频
-#define PWM_PRSC    ((u8)0)            //TIM1分频系数
-// 20000 中转
-#define PWM_FREQ    ((u16) 20000)      //PWM频率(Hz)
+#define PWM_PRSC    ((u8)1)            //TIM1分频系数
+// 0 - 2100000-2000(最慢) 低转 越大越快
+// 1 - 16000 高转(相对安静)
+#define PWM_FREQ    ((u16) 18000)      //PWM频率(Hz)
 #define PWM_PERIOD  ((u16) (CKTIM / (u32)(2 * PWM_FREQ *(PWM_PRSC+1))))
 
 #ifdef __cplusplus

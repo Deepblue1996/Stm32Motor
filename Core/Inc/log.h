@@ -12,8 +12,8 @@ extern "C" {
 #include "stm32f4xx_hal.h"
 
 void sendToWifi(char *str, ...);
-void Print(char *str, ...);
-void Log(char *str, ...);
+void Uart1(char *str, ...);
+void Uart2(char *str, ...);
 
 char *sprint(char *str, ...);
 char *send(UART_HandleTypeDef *huart, char *msg);

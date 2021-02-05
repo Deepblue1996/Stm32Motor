@@ -17,8 +17,10 @@ uint8_t connectService() {
     if (isConnect) {
         return true;
     }
+//    Log("AT+CIPSTART=\"TCP\",\"119.23.172.242\",8088\r\n");
+//    char *string5 = sendResponse2("AT+CIPSTART=\"TCP\",\"119.23.172.242\",8088\r\n", "OK");
     Log("AT+CIPSTART=\"TCP\",\"192.168.0.112\",8088\r\n");
-    char *string5 = sendResponse1("AT+CIPSTART=\"TCP\",\"192.168.0.112\",8088\r\n", "OK");
+    char *string5 = sendResponse2("AT+CIPSTART=\"TCP\",\"192.168.0.112\",8088\r\n", "OK");
     if (strstr(string5, "ALREADY CONNECTED") != NULL) {
         Log("device connected\r\n");
         isConnect = true;

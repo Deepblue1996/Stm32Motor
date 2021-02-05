@@ -166,6 +166,7 @@ void uart_send_all_loop(UART_HandleTypeDef *huart) {
 }
 
 void uart1_loop() {
+
     HAL_UART_Receive_IT(&huart1, (uint8_t *) &aRxBuffer1, 1);   //再开启接收中断
 
     if (Uart1_Rx_Cnt >= 255)  //溢出判断
@@ -193,11 +194,9 @@ void uart1_loop() {
         uart1_state = RUNNING;
 
         if (Uart1_Rx_Cnt > 2 && (Uart1_RxBuff[Uart1_Rx_Cnt - 1] == 0x0A) &&
-            (Uart1_RxBuff[Uart1_Rx_Cnt - 2] == 0x0D) &&
-            (strstr(Uart1_RxBuff, "OK") != 0 || strstr(Uart1_RxBuff, "ERROR") != 0 ||
-             strstr(Uart1_RxBuff, "busy") != 0)) //判断结束位
+            (Uart1_RxBuff[Uart1_Rx_Cnt - 2] == 0x0D)) //判断结束位
         {
-            memset(uart1_data, 0, sizeof(Uart1_RxBuff));
+            memset(uart1_data, 0, sizeof(uart1_data));
             // 复制到指定内存
             strcpy(uart1_data, Uart1_RxBuff);
             // 给予完成结果
@@ -208,10 +207,10 @@ void uart1_loop() {
             memset(Uart1_RxBuff, 0x00, sizeof(Uart1_RxBuff)); //清空数组
         }
     }
+
 }
 
 void uart2_loop() {
-
     HAL_UART_Receive_IT(&huart2, (uint8_t *) &aRxBuffer2, 1);   //再开启接收中断
 
     if (Uart2_Rx_Cnt >= 255)  //溢出判断
@@ -239,20 +238,21 @@ void uart2_loop() {
         uart2_state = RUNNING;
 
         if (Uart2_Rx_Cnt > 2 && (Uart2_RxBuff[Uart2_Rx_Cnt - 1] == 0x0A) &&
-            (Uart2_RxBuff[Uart2_Rx_Cnt - 2] == 0x0D)) //判断结束位
+            (Uart2_RxBuff[Uart2_Rx_Cnt - 2] == 0x0D) &&
+            (strstr(Uart2_RxBuff, "OK") != 0 || strstr(Uart2_RxBuff, "ERROR") != 0 ||
+             strstr(Uart2_RxBuff, "busy") != 0 || strstr(Uart2_RxBuff, "#\r\n") != 0)) //判断结束位
         {
-            memset(uart2_data, 0, sizeof(Uart2_RxBuff));
+            memset(uart2_data, 0, sizeof(uart2_data));
             // 复制到指定内存
             strcpy(uart2_data, Uart2_RxBuff);
             // 给予完成结果
             uart2_state = FINISH;
-            //HAL_UART_Transmit(&huart1, (uint8_t *) &Uart1_RxBuff, Uart1_Rx_Cnt, 0xFFFF); //将收到的信息发送出去
+            //HAL_UART_Transmit(&huart2, (uint8_t *) &Uart2_RxBuff, Uart2_Rx_Cnt, 0xFFFF); //将收到的信息发送出去
             // 清空缓存
             Uart2_Rx_Cnt = 0;
             memset(Uart2_RxBuff, 0x00, sizeof(Uart2_RxBuff)); //清空数组
         }
     }
-
 }
 
 /**
